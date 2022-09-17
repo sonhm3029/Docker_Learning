@@ -1,6 +1,5 @@
 # Docker note
 
-
 # Table of contents
 
 - [Docker note](#docker-note)
@@ -25,7 +24,6 @@
   - [19. Các lệnh tra cứu thông tin, giám sát hoạt động của image và container](#19-các-lệnh-tra-cứu-thông-tin-giám-sát-hoạt-động-của-image-và-container)
   - [20. Copy dữ liệu từ file nào đó trong máy host vào container đang chạy](#20-copy-dữ-liệu-từ-file-nào-đó-trong-máy-host-vào-container-đang-chạy)
   - [21. Biên tập dockerfile](#21-biên-tập-dockerfile)
-
 
 Các lệnh:
 
@@ -59,7 +57,15 @@ docker image rm imagename
 
 `imagename` là tên của image, nếu có nhiều verion (nhiều tag thì thêm `imagename:tag`). Có thể thay `imagename` bằng `imageID` ( Xem trên cmd bằng lệnh `docker images`).
 
-**Chú ý :** Nếu không xóa được image bằng id thì dùng `ten:tag` có thể hoạt động được.s
+**Chú ý :** Nếu không xóa được image bằng id thì dùng `ten:tag` có thể hoạt động được.
+
+Hoặc dùng lệnh:
+
+```cmd
+docker rmi imagename
+```
+
+`imagename` có thể thay bằng các tham số như lệnh `docker image rm`
 
 ## 4. Chạy container với image hiện có trên máy
 
@@ -69,7 +75,7 @@ docker run -it --name NAME -h HOST image
 
 Với `-it` là kết hợp của `-i` (tương tác với image) `-t` (terminal của image). `NAME` là define tên của container, `HOST` là define tên của host và `image` là tên image dùng.
 
-Chú ý có thể thay tên image bằng id của nó (id chỉ cần chỉ ra một bộ phận, không cần phải tất cả id). 
+Chú ý có thể thay tên image bằng id của nó (id chỉ cần chỉ ra một bộ phận, không cần phải tất cả id).
 
 **Có thể dùng lệnh :**
 
@@ -77,7 +83,7 @@ Chú ý có thể thay tên image bằng id của nó (id chỉ cần chỉ ra m
 docker run -it --name NAME --rm -h HOST image
 ```
 
-Tham số `rm` được thêm vào sẽ xóa container  ngay sau khi ta thoát, không dùng container nữa.
+Tham số `rm` được thêm vào sẽ xóa container ngay sau khi ta thoát, không dùng container nữa.
 
 ## 5. Thoát khỏi container khi đang chạy
 
@@ -129,6 +135,22 @@ docker rm container -f
 
 Với `-f` có nghĩa là force (buộc dừng)
 
+**Xóa container bằng cách dùng filer:**
+
+```cmd
+docker rm $(docker ps -a -q -f status=exited)
+```
+
+Lệnh trên gồm `-q` để chỉ return numeric IDS và `-f` để filter ra các container có `status=exited` để xóa.
+
+Dùng lệnh
+
+```cmd
+docker container prune
+```
+
+để xóa hết các container
+
 ## 9. Chạy lại một container đã dừng/ dừng một container đang chạy
 
 Đầu tiên nên `docker ps -a` để xem tất cả container.
@@ -149,7 +171,7 @@ Với `container_id` là id của container đang chạy cần dừng.
 docker exec container_name/container_id lenh
 ```
 
-Hoặc 
+Hoặc
 
 ```cmd
 docker exec -it container_name/container_id lenh
@@ -289,7 +311,6 @@ Mặc định thì các container trong docker sẽ được kết nối tới m
 
 ![img](./img/network_1.png)
 
-
 ### Xem mạng có những container nào đang kết nối đến.
 
 ```cmd
@@ -311,7 +332,6 @@ docker inspect tenContainer
 ![network_4](./img/network_4.png)
 
 Xem [Ví dụ](./example/network_busybox) nhỏ về kết nối các container trong cùng mạng với busybox
-
 
 ### Ánh xạ cổng port từ mạng này sang mạng trong docker.
 
@@ -363,7 +383,7 @@ docker network disconnect tenMang tenContainer
 
 ## 18. Thực hành kết nối các container (PHP + MYSQL + APACHE)
 
- [Xem ví dụ](./example/mysql_apache_php/)
+[Xem ví dụ](./example/mysql_apache_php/)
 
 ## 19. Các lệnh tra cứu thông tin, giám sát hoạt động của image và container
 
@@ -419,7 +439,7 @@ docker stats idCOntainer1 idCOntainer2...
 
 Giám sát các container có id là `idContainer1` , `idContainer2`. Có thể sử dụng tên container. Mỗi container cách nhau dấu cách
 
-Để thực hiện giám sát việc sử dụng của tất cả các container đang chạy 
+Để thực hiện giám sát việc sử dụng của tất cả các container đang chạy
 
 ```cmd
 docker stats
@@ -477,6 +497,7 @@ CMD ["-D", "FOREGROUND"]
 **Quy tắc viết chỉ thị Dockerfile:**
 
 Ở đây bạn chú ý khi viết các chỉ thị trong Dockerfile thì một chỉ thị có thể viết theo cấu trúc:
+
 ```Dockerfile
 # Ghi chú chỉ thị
 TÊN_CHỈ_THỊ các_tham_số
@@ -601,3 +622,162 @@ Chú ý ở dạng sau của `CMD` thì nó lại là thiết lập tham số ch
 ```cmd
 CMD ["tham-số1", "tham-số2"]
 ```
+
+## 22. Ví dụ cho việc build 1 app thành images để chạy trên máy khác có docker
+
+Tải flask app sau để thực hành:
+
+[Flask app](./docker_tut/flask-app/)
+
+Sau khi có một app hoàn chỉnh, tạo `Dockerfile` để thực hiện các lệnh cần chạy khi đóng gói images.
+
+Trong `Dockerfile`
+
+```Dockerfile
+FROM python:3.8
+```
+
+Câu lệnh này dùng `FROM` để chỉ ra base image để có thể chạy app đó là `python:3.8`
+
+Tiếp theo, cần copy các files và tải dependencies.
+
+Đầu tiên, ta cần set working dicrectory và copy file như sau:
+
+```Dockerfile
+# set a directory for the app
+WORKDIR /usr/src/app
+
+# copy all theo files to the container
+COPY . .
+```
+
+Bây giờ ta thực hiện tải các dependencies
+
+```Dockerfile
+RUN pip install --no-cache-dir -r requirements.txt
+```
+
+Tiếp theo cần chỉ định ra port chạy app, ta sử dụng port `5000` để chạy flask app
+
+```Dockerfile
+EXPOSE 5000
+```
+
+Cuối cùng là viết lệnh `cmd` để chạy app. Ta sử dụng `CMD` command để chỉ ra lệnh gì sẽ được chạy để start app.
+
+```Dockerfile
+CMD ["python", "./app.py"]
+```
+
+Đây là file `Dockerfile` hoàn thiện:
+
+```Dockerfile
+FROM python:3.8
+
+# set a directory for the app
+WORKDIR /usr/src/app
+
+# copy all the files to the container
+COPY . .
+
+# install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# define the port number the container should expose
+EXPOSE 5000
+
+# run the command
+CMD ["python", "./app.py"]
+```
+
+**Tạo image và push lên docker hub:**
+
+Sử dụng lệnh build với syntax:
+
+```cmd
+docker build [OPTIONS] PATH | URL | -
+```
+
+Với Options:
+
+```cmd
+Options:
+      --add-host list           Add a custom host-to-IP mapping (host:ip)
+      --build-arg list          Set build-time variables
+      --cache-from strings      Images to consider as cache sources
+      --disable-content-trust   Skip image verification (default true)
+  -f, --file string             Name of the Dockerfile (Default is
+                                'PATH/Dockerfile')
+      --iidfile string          Write the image ID to the file
+      --isolation string        Container isolation technology
+      --label list              Set metadata for an image
+      --network string          Set the networking mode for the RUN
+                                instructions during build (default "default")
+      --no-cache                Do not use cache when building the image
+  -o, --output stringArray      Output destination (format:
+                                type=local,dest=path)
+      --platform string         Set platform if server is multi-platform
+                                capable
+      --progress string         Set type of progress output (auto, plain,
+                                tty). Use plain to show container output
+                                (default "auto")
+      --pull                    Always attempt to pull a newer version of
+                                the image
+  -q, --quiet                   Suppress the build output and print image
+                                ID on success
+      --secret stringArray      Secret file to expose to the build (only
+                                if BuildKit enabled):
+                                id=mysecret,src=/local/secret
+      --ssh stringArray         SSH agent socket or keys to expose to the
+                                build (only if BuildKit enabled) (format:
+                                default|<id>[=<socket>|<key>[,<key>]])
+  -t, --tag list                Name and optionally a tag in the
+                                'name:tag' format
+      --target string           Set the target build stage to build.
+```
+
+Ta chạy lệnh :
+
+```cmd
+docker build -t yourusername/repository .
+```
+
+Ở đây `yourusername` và `repository` là `username` và tên `repository` ở trên Docker hub
+
+Sử dụng `.` chính là path dẫn đến `Dockerfile` để thực hiện build.
+
+Sau khi build images lên repository của docker hub. Trên máy khách, thực hiện lệnh sau để chạy thử container:
+
+```cmd
+docker run -p 8888:5000 yourusername/repository
+```
+
+Đây là lệnh để thực hiện `pull + chạy container`.
+
+Trong đó, command trên sử dụng port `5000` để chạy server inside container. Còn port `8888` là port để truy cập ở bên ngoài. Như vạy t có thể vào `localhost:8888` để xem app chạy
+
+![](./img/dockerfile_3.png)
+
+![](./img/dockerfile_2.png)
+
+**Để cho người khác có thể pull images của mình đã build:**
+
+* B1: Đăng nhập vào docker hub
+
+```cmd
+docker login
+```
+
+* B2: Push images lên docker hub
+
+```cmd
+docker push yourusername/project_name
+```
+
+Ví dụ tk docker hub là `sonhm2329`, project (tên của images đã build) là `catnip`
+
+```cmd
+docker push sonhm2329/catnip
+```
+
+## 23. Multi-container environments
